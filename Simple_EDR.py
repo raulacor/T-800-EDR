@@ -18,3 +18,8 @@ while True:
 
     started_processes = get_running_processes - old_processes()
     for process in started_processes: 
+        logging.info(f"New process detected: {process}")
+        print(f"New process detected: {process}")
+
+        if process.lower() in SUSPICIOUS_PROCESSES:
+            logging.warning(f"Suspicious process detected: {process}")
