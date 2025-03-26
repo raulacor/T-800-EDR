@@ -6,7 +6,7 @@ logging.basicConfig(filename="edr_log.txt", level=logging.INFO, format="%(asctim
 
 #Define alguns processos/executaveis suspeitos
 SUSPICIOUS_PROCESSES = ["cmd.exe", "powershell.exe ", "bash", "sh", "python.exe" "mimikatz.exe", "darkcometer.exe", "meterpreter.exe"]
-SUSPICIOUS_EXTENSIONS = [".bat", ".sh", ".py"]
+SUSPICIOUS_EXTENSIONS = [".bat", ".sh", ".py", ".vbs"]
 
 
 def get_running_processes():
