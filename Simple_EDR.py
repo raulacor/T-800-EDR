@@ -14,7 +14,7 @@ def get_running_processes():
     return {p.info['name'] for p in psutil.processes_iter(attrs=['name'])}
 
 def main():
-    print("EDR started. Monitoring processes. . . ")
+    print("[EDR iniciado] Monitorando processos. . . ")
     old_processes = get_running_processes()
     
 while True:
@@ -25,8 +25,8 @@ while True:
     started_processes = get_running_processes - old_processes()
     """Detecta processos iniciados recentemente"""
     for process in started_processes: 
-        logging.info(f"New process detected: {process}")
-        print(f"New process detected: {process}")
+        logging.info(f"Novo processo detectado: {process}")
+        print(f"Nove processo detectado: {process}")
 
         if process.lower() in SUSPICIOUS_PROCESSES or SUSPICIOUS_EXTENSIONS:
             logging.warning(f"[ALERTA] Processo suspeito: {process}")
@@ -35,7 +35,7 @@ while True:
             for proc in psutil.process_iter(attrs=["name", "pid"]):
                 if proc.info["name"] == process:
                     psutil.Process(proc.info['pid']).terminate()
-                    logging.info(f"Processo terminado: {process}")
+                    logging.info(f"Processo encerrado: {process}")
                     print(f"Processo encerrado: {process}")
 
     old_processes = new_processes
