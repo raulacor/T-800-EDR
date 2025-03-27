@@ -1,2 +1,3 @@
-# test.EDR
-EDR tryouts for FIAP challenge
+#TryOuts_EDR
+
+Uma EDR (Endpoint response and detection) primitiva e simplificada para teste.
