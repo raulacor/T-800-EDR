@@ -1,49 +1,46 @@
 import psutil
+import os
 import time
-import logging
-
-logging.basicConfig(filename="edr_log.txt", level=logging.INFO, format="%(asctime)s - %(message)s")
 
 #Define alguns processos/executaveis suspeitos
-SUSPICIOUS_PROCESSES = {"cmd.exe", "powershell.exe ", "bash", "sh", 
+suspecious_processes = {"cmd.exe", "powershell.exe ", "bash", "sh", 
                         "python.exe" "mimikatz.exe", "darkcometer.exe", 
                         "meterpreter.exe"
                         }
 
-SUSPICIOUS_EXTENSIONS = {".bat", ".sh", ".py"}
+suspecious_extensions = {".bat", ".sh", ".py"}
 
+LOG_FILE = "edr_log.txt"
 
-def get_running_processes():
-    """Retorna uma lista dos processos que estão rodando atualmente no computador"""
-    return {p.info['name'] for p in psutil.processes_iter(attrs=['name'])}
+#SA = Suspecious Activity / Atividades suspeitas
+def log_SA(process_name, pid, command):
+    with open(LOG_FILE, "a") as log:
+        log.write(f"[ALERTA] Processo suspeito detectado!: {process_name} (PID: {pid}) - Comando: {command}\n")
+    print (f"[ALERTA] {process_name} (PID: {pid}) identificado! Comando: {command}")
 
-def process_monitoring():
-    print("EDR inciado. Monitorando processos. . . ")
-    old_processes = get_running_processes()
+# monitor de processos
+def monitor_process(): 
     while True:
-        time.sleep(3) 
-        """Determina o intervalo de verificações"""
-        new_processes = get_running_processes
+        for process in psutil.process_iter(attrs=['pid', 'name', 'cmdline']):
+            try:
+                process_name = process.info['name']
+                pid = process.info['pid']
+                cmdline = process.info['cmdline']
+                command = ' '.join(cmdline) if cmdline else "[Sem comando]"
 
+                #verifica o processo
+                if process_name.lower() in suspecious_processes:
+                    log_SA(process_name, pid, command)
+                    psutil.Process(pid).terminate()#finaliza o processo
 
-        started_processes = get_running_processes - old_processes()
-        """Detecta processos iniciados recentemente"""
-        for process in started_processes: 
-            logging.info(f"New process detected: {process}")
-            print(f"New process detected: {process}")
+                if any(ext in command for ext in suspecious_extensions):
+                    log_SA(process_name, pid, command)
+                    psutil.Process(pid).terminate()#finaliza o processo
 
-            if process.lower() in SUSPICIOUS_PROCESSES or SUSPICIOUS_EXTENSIONS:
-                logging.warning(f"[ALERTA] Processo suspeito: {process}")
-                print(f"[ALERTA] Processo suspeito detectado: {process}")
-
-                for proc in psutil.process_iter(attrs=["name", "pid"]):
-                    if proc.info["name"] == process:
-                        psutil.Process(proc.info['pid']).terminate()
-                        logging.info(f"Processo encerrado: {process}")
-                        print(f"Processo encerrado: {process}")
-
-                        old_processes = new_processes
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+        time.sleep(2)  #intervalo de verificações
 
 if __name__ == "__main__":
-    print("[INFO] Monitoramento inicializado. . .")
-    process_monitoring()
+    print("[INFO] Monitoramento de Processos Iniciado!")
+    monitor_process()
